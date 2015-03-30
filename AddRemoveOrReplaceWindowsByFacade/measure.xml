@@ -7,7 +7,7 @@
   <class_name>AddRemoveOrReplaceWindowsByFacade</class_name>
   <display_name>Add Remove Or Replace Windows By Facade</display_name>
   <description>Adds ribbon windows to surfaces on the selected facade if none exist. Removes all windows on the selected facade. Replaces all windows on the selected facade with ribbon windows.</description>
-  <modeler_description>TODO: cleanup and comments. Loops through surfaces on the selected facade and either adds, removes, or replaces a subsurface.</modeler_description>
+  <modeler_description>Loops through surfaces on the selected facade and either adds, removes, or replaces a subsurface.</modeler_description>
   <arguments>
     <argument>
       <name>function</name>
