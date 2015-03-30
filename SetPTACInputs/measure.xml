@@ -2,12 +2,12 @@
   <schema_version>3.0</schema_version>
   <name>set_ptac_inputs</name>
   <uid>2eeabb8a-392e-45e7-b55c-d99bd8f10c72</uid>
-  <version_id>ef9950d6-8b59-4012-be35-a120ee6f86d1</version_id>
+  <version_id>dbab1e36-6796-47e4-8ba6-ba5a2de08011</version_id>
   <xml_checksum>4435983D</xml_checksum>
   <class_name>SetPTACInputs</class_name>
   <display_name>Set PTAC Inputs</display_name>
-  <description>Changes one or more Packaged Terminal Air Conditioner attributes in the model.</description>
-  <modeler_description>Replace this text with an explanation for the energy modeler specifically.  It should explain how the measure is modeled, including any requirements about how the baseline model must be set up, major assumptions, citations of references to applicable modeling resources, etc.  The energy modeler should be able to read this description and understand what changes the measure is making to the model and why these changes are being made.  Because the Modeler Description is written for an expert audience, using common abbreviations for brevity is good practice.</modeler_description>
+  <description>Allows the user to change one or more Packaged Terminal Air Conditioner fields in the model. Can be applied to all PTACs or filtered based on name.</description>
+  <modeler_description>Loops through ZoneHVACPackagedTerminalAirConditioner objects in the model and changes attributes based on user input.</modeler_description>
   <arguments>
     <argument>
       <name>string</name>
@@ -194,7 +194,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>192E41A1</checksum>
+      <checksum>44D7C3C6</checksum>
     </file>
   </files>
 </measure>

@@ -342,8 +342,8 @@ Coil:Cooling:DX:SingleSpeed,
           clg_coil.setRatedSensibleHeatRatio(cc_shr)
         end
         if cc_cop > 0
-          optionalDoubleCOP = OpenStudio::OptionalDouble.new(cc_cop)
-          clg_coil.setRatedCOP(optionalDoubleCOP)
+          optionalDouble = OpenStudio::OptionalDouble.new(cc_cop)
+          clg_coil.setRatedCOP(optionalDouble)
         end
         if cc_flow > 0
           clg_coil.setRatedAirFlowRate(cc_flow_si)
