@@ -1,0 +1,208 @@
+<measure>
+  <schema_version>3.0</schema_version>
+  <name>set_wshp_inputs</name>
+  <uid>669703c7-9c36-474d-b8fb-c34b8697d1d2</uid>
+  <version_id>c0216362-5331-47b5-b7a9-ff9b2647838b</version_id>
+  <xml_checksum>4435983D</xml_checksum>
+  <class_name>SetWSHPInputs</class_name>
+  <display_name>Set WSHP Inputs</display_name>
+  <description>Allows the user to change one or more Water Source Heat Pump attributes in the model. Can be applied to all WSHPs in the model or to filtered based on the name.</description>
+  <modeler_description>Loops through ZoneHVACWaterToAirHeatPump objects in the model and changes the attributes based on user input.</modeler_description>
+  <arguments>
+    <argument>
+      <name>string</name>
+      <display_name>Set inputs for equipment containing the string (case sensitive, enter *.* for all):</display_name>
+      <type>String</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>*.*</default_value>
+    </argument>
+    <argument>
+      <name>wshp_flow_clg</name>
+      <display_name>WSHP: Supply Air Flow Rate During Cooling Operation {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>wshp_flow_htg</name>
+      <display_name>WSHP: Supply Air Flow Rate During Heating Operation {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>wshp_flow_no_clg_or_htg</name>
+      <display_name>WSHP: Supply Air Flow Rate When No Cooling or Heating is Needed {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>wshp_oa_clg</name>
+      <display_name>WSHP: Outdoor Air Flow Rate During Cooling Operation {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>wshp_oa_htg</name>
+      <display_name>WSHP: Outdoor Air Flow Rate During Heating Operation {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>wshp_oa_no_clg_or_htg</name>
+      <display_name>WSHP: Outdoor Air Flow Rate When No Cooling or Heating is Needed {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fan_eff_tot</name>
+      <display_name>Fan: Fan Total Efficiency</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fan_rise</name>
+      <display_name>Fan: Pressure Rise {inH2O}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fan_flow</name>
+      <display_name>Fan: Maximum Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fan_eff_mot</name>
+      <display_name>Fan: Motor Efficiency</display_name>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_air_flow</name>
+      <display_name>Htg Coil: Rated Air Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_wtr_flow</name>
+      <display_name>Htg Coil: Rated Water Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_cap</name>
+      <display_name>Htg Coil: Gross Rated Heating Capacity {Btu/h}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_cop</name>
+      <display_name>Htg Coil: Gross Rated Heating COP</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_air_flow</name>
+      <display_name>Clg Coil: Rated Air Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_wtr_flow</name>
+      <display_name>Clg Coil: Rated Water Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_cap</name>
+      <display_name>Clg Coil: Gross Rated Cooling Capacity {Btu/h}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_sen_cap</name>
+      <display_name>Clg Coil: Gross Rated Sensible Cooling Capacity {Btu/h}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_cop</name>
+      <display_name>Clg Coil: Gross Rated Cooling COP</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+  </arguments>
+  <provenances/>
+  <tags>
+    <tag>HVAC.Whole System</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Uses SketchUp API</name>
+      <value>false</value>
+      <datatype>boolean</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <filename>SetWSHPInputs_Test.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>test</usage_type>
+      <checksum>6AE2407E</checksum>
+    </file>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>1.4.0</identifier>
+        <min_compatible>1.4.0</min_compatible>
+      </version>
+      <filename>measure.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>script</usage_type>
+      <checksum>F72E68A5</checksum>
+    </file>
+  </files>
+</measure>
