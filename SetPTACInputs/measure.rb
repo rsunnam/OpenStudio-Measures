@@ -73,11 +73,11 @@ ZoneHVAC:PackagedTerminalAirConditioner,
     ptac_oa_no_clg_or_htg.setDisplayName("PTAC: Outdoor Air Flow Rate When No Cooling or Heating is Needed {ft3/min}")
     ptac_oa_no_clg_or_htg.setDefaultValue(-1)
     args << ptac_oa_no_clg_or_htg
-
+'
     #populate choice argument for schedules in the model
     sch_handles = OpenStudio::StringVector.new
     sch_display_names = OpenStudio::StringVector.new
-'
+
     #putting schedule names into hash
     sch_hash = {}
     model.getSchedules.each do |sch|
@@ -101,7 +101,7 @@ ZoneHVAC:PackagedTerminalAirConditioner,
     sched.setDisplayName("PTAC: Supply Air Fan Operating Mode Schedule Name")
     args << sched
 '
-    # Fan Inputs TODO add all types when available: OnOff
+    # Fan Inputs TODO add additional types when available: OnOff
 '
 Fan:ConstantVolume,
     ,                        !- Name
