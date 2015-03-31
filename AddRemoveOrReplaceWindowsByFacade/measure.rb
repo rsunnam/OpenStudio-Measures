@@ -45,6 +45,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScrip
     offset.setDefaultValue(30.0)
     args << offset
 
+    # return argument vector
     return args
 
   end
