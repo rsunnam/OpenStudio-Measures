@@ -3,7 +3,7 @@
   <error>uninitialized constant OpenStudio::Ruleset::ModelUserScrip</error>
   <name>add_remove_or_replace_windows_by_facade</name>
   <uid>a6ab424b-5f89-4ef5-a780-059ed71aa237</uid>
-  <version_id>b87ebd76-022e-4823-88a9-64c30f7cf5f9</version_id>
+  <version_id>34c83cbd-3d40-4ff5-9ccd-ceb6f915a7eb</version_id>
   <xml_checksum>6FAFA9DE</xml_checksum>
   <class_name>AddRemoveOrReplaceWindowsByFacade</class_name>
   <display_name>Add Remove Or Replace Windows By Facade</display_name>
@@ -125,7 +125,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>F6E561EA</checksum>
+      <checksum>DF512390</checksum>
     </file>
   </files>
 </measure>

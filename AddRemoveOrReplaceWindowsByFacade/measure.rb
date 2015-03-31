@@ -9,6 +9,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScrip
   # define the arguments that the user will enter
   def arguments(model)
 
+    # create argument vector
     args = OpenStudio::Ruleset::OSArgumentVector.new
 
     # argument for measure function
