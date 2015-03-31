@@ -2,7 +2,7 @@
   <schema_version>3.0</schema_version>
   <name>set_ptac_inputs</name>
   <uid>2eeabb8a-392e-45e7-b55c-d99bd8f10c72</uid>
-  <version_id>dbab1e36-6796-47e4-8ba6-ba5a2de08011</version_id>
+  <version_id>febb8b82-e531-4c30-8ca9-cb072792aadd</version_id>
   <xml_checksum>4435983D</xml_checksum>
   <class_name>SetPTACInputs</class_name>
   <display_name>Set PTAC Inputs</display_name>
@@ -183,7 +183,7 @@
       <filename>SetPTACFields_Test.rb</filename>
       <filetype>rb</filetype>
       <usage_type>test</usage_type>
-      <checksum>B1C6BC79</checksum>
+      <checksum>37297C56</checksum>
     </file>
     <file>
       <version>
@@ -194,7 +194,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>44D7C3C6</checksum>
+      <checksum>27BF1084</checksum>
     </file>
   </files>
 </measure>
