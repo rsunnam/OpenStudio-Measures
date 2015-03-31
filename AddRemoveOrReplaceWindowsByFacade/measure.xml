@@ -1,8 +1,9 @@
 <measure>
   <schema_version>3.0</schema_version>
+  <error>uninitialized constant OpenStudio::Ruleset::ModelUserScrip</error>
   <name>add_remove_or_replace_windows_by_facade</name>
   <uid>a6ab424b-5f89-4ef5-a780-059ed71aa237</uid>
-  <version_id>611b408c-1815-4807-a2e8-4384be2e6a00</version_id>
+  <version_id>b87ebd76-022e-4823-88a9-64c30f7cf5f9</version_id>
   <xml_checksum>6FAFA9DE</xml_checksum>
   <class_name>AddRemoveOrReplaceWindowsByFacade</class_name>
   <display_name>Add Remove Or Replace Windows By Facade</display_name>
@@ -18,15 +19,15 @@
       <default_value>Add</default_value>
       <choices>
         <choice>
-          <value>Add</value>
+          <value></value>
           <display_name>Add</display_name>
         </choice>
         <choice>
-          <value>Remove</value>
+          <value></value>
           <display_name>Remove</display_name>
         </choice>
         <choice>
-          <value>Replace</value>
+          <value></value>
           <display_name>Replace</display_name>
         </choice>
       </choices>
@@ -40,19 +41,19 @@
       <default_value>South</default_value>
       <choices>
         <choice>
-          <value>North</value>
+          <value></value>
           <display_name>North</display_name>
         </choice>
         <choice>
-          <value>East</value>
+          <value></value>
           <display_name>East</display_name>
         </choice>
         <choice>
-          <value>South</value>
+          <value></value>
           <display_name>South</display_name>
         </choice>
         <choice>
-          <value>West</value>
+          <value></value>
           <display_name>West</display_name>
         </choice>
       </choices>
@@ -92,23 +93,6 @@
   </attributes>
   <files>
     <file>
-      <filename>SetWindowToWallRatioByFacade_Test.rb</filename>
-      <filetype>rb</filetype>
-      <usage_type>test</usage_type>
-      <checksum>825897F0</checksum>
-    </file>
-    <file>
-      <version>
-        <software_program>OpenStudio</software_program>
-        <identifier>1.4.0</identifier>
-        <min_compatible>1.4.0</min_compatible>
-      </version>
-      <filename>measure.rb</filename>
-      <filetype>rb</filetype>
-      <usage_type>script</usage_type>
-      <checksum>A93C5101</checksum>
-    </file>
-    <file>
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>test</usage_type>
@@ -125,6 +109,23 @@
       <filetype>rb</filetype>
       <usage_type>test</usage_type>
       <checksum>E95953CF</checksum>
+    </file>
+    <file>
+      <filename>SetWindowToWallRatioByFacade_Test.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>test</usage_type>
+      <checksum>757B1EF6</checksum>
+    </file>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>1.4.0</identifier>
+        <min_compatible>1.4.0</min_compatible>
+      </version>
+      <filename>measure.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>script</usage_type>
+      <checksum>F6E561EA</checksum>
     </file>
   </files>
 </measure>

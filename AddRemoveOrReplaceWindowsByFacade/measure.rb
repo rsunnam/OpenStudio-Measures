@@ -1,12 +1,12 @@
 # start the measure
 class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScrip
 
-  # define the name that a user will see, this method may be deprecated as the display name in PAT comes from the name field in measure.xml
+  # define the name that a user will see
   def name
     return "Add Remove Or Replace Windows By Facade"
   end
 
-  # return a vector of arguments
+  # define the arguments that the user will enter
   def arguments(model)
 
     args = OpenStudio::Ruleset::OSArgumentVector.new
