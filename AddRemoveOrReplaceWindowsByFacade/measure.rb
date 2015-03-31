@@ -200,7 +200,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScrip
       starting_gross_ext_wall_area += surface_gross_area
       starting_ext_window_area += ext_window_area
 
-      # NEW
+      # NEW CODE
       runner.registerInfo("Number of subsurfaces within #{s.name}: #{subsurfaces.size}")
 
       if function == "Remove"
