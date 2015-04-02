@@ -1,9 +1,8 @@
 <measure>
   <schema_version>3.0</schema_version>
-  <error>uninitialized constant OpenStudio::Ruleset::ModelUserScrip</error>
   <name>add_remove_or_replace_windows_by_facade</name>
   <uid>a6ab424b-5f89-4ef5-a780-059ed71aa237</uid>
-  <version_id>34c83cbd-3d40-4ff5-9ccd-ceb6f915a7eb</version_id>
+  <version_id>a0ad8e34-ead6-4d52-a910-da33c6cc8d22</version_id>
   <xml_checksum>6FAFA9DE</xml_checksum>
   <class_name>AddRemoveOrReplaceWindowsByFacade</class_name>
   <display_name>Add Remove Or Replace Windows By Facade</display_name>
@@ -19,15 +18,15 @@
       <default_value>Add</default_value>
       <choices>
         <choice>
-          <value></value>
+          <value>Add</value>
           <display_name>Add</display_name>
         </choice>
         <choice>
-          <value></value>
+          <value>Remove</value>
           <display_name>Remove</display_name>
         </choice>
         <choice>
-          <value></value>
+          <value>Replace</value>
           <display_name>Replace</display_name>
         </choice>
       </choices>
@@ -41,19 +40,19 @@
       <default_value>South</default_value>
       <choices>
         <choice>
-          <value></value>
+          <value>North</value>
           <display_name>North</display_name>
         </choice>
         <choice>
-          <value></value>
+          <value>East</value>
           <display_name>East</display_name>
         </choice>
         <choice>
-          <value></value>
+          <value>South</value>
           <display_name>South</display_name>
         </choice>
         <choice>
-          <value></value>
+          <value>West</value>
           <display_name>West</display_name>
         </choice>
       </choices>
@@ -125,7 +124,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>DF512390</checksum>
+      <checksum>AA7D5CB0</checksum>
     </file>
   </files>
 </measure>

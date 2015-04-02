@@ -1,5 +1,5 @@
 # start the measure
-class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScrip
+class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
 
   # define the name that a user will see
   def name
