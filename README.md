@@ -4,4 +4,6 @@ To copy a measure:
 
 1. Open the measure directory and copy the contents of the `measure.rb` file
 2. Create a new measure in OS or PAT
-3. Open the measure for editing and replace the code
+3. Open the newly created measure and replace the code
+
+(or fork this repo and clone to local)
