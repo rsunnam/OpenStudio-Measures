@@ -11,6 +11,16 @@ class SetFanInputs < OpenStudio::Ruleset::ModelUserScript
 
     args = OpenStudio::Ruleset::OSArgumentVector.new
 
+    # NOTE versions
+    # OS version = 1.7.0
+    # EP version = 8.2
+
+    # argument for string
+		string = OpenStudio::Ruleset::OSArgument::makeStringArgument("string", true)
+		string.setDisplayName("Set inputs for equipment containing the string (case sensitive, enter *.* for all):")
+    string.setDefaultValue("*.*")
+		args << string
+
     fan_choices = OpenStudio::StringVector.new
     fan_choices << "FanConstantVolume"
     fan_choices << "FanOnOff"
@@ -227,6 +237,7 @@ Fan:ZoneExhaust,
     end
 
     # get user arguments, convert to SI units for simulation
+    string = runner.getStringArgumentValue("string", user_arguments)
     fan_type = runner.getStringArgumentValue("fan_type", user_arguments)
     #fan_sched = runner.getOptionalWorkspaceObjectChoiceValue("fan_sched", user_arguments, model)
     #fan_sched = fan_sched.get.to_Schedule.get
@@ -290,60 +301,64 @@ Fan:ZoneExhaust,
 
     fans.each do |fan|
 
-      # set common inputs
-'      if fan_sched.size > 1
-        fan.setAvailabilitySchedule(fan_sched)
-      end
-'
-      if fan_eff_tot > 0
-        fan.setFanEfficiency(fan_eff_tot)
-      end
-      if fan_rise > 0
-        fan.setPressureRise(fan_rise_si)
-      end
-      if fan_flow > 0
-        fan.setMaximumFlowRate(fan_flow_si)
-      end
-      if fan_eff_mot > 0
-        fan.setMotorEfficiency(fan_eff_mot) unless fan_type == "FanZoneExhaust"
-      end
-      if fan_mot_heat > 0
-        fan.setMotorInAirstreamFraction(fan_mot_heat) unless fan_type == "FanZoneExhaust"
-      end
+      if fan.name.to_s.include? string or string == "*.*"
 
-      # set on off inputs
-      if fan_type == "FanOnOff"
-        #TODO future curves
-      end
-
-      # set vav inputs
-      if fan_type == "FanVariableVolume"
-
-        fan.setFanPowerMinimumFlowRateInputMethod(vav_min_flow_method)
-        if vav_min_flow_frac > 0
-          fan.setFanPowerMinimumFlowFraction(vav_min_flow_frac)
+        # set common inputs
+  '      if fan_sched.size > 1
+          fan.setAvailabilitySchedule(fan_sched)
         end
-        if vav_min_flow_rate > 0
-          fan.setFanPowerMinimumAirFlowRate(vav_min_flow_rate_si)
+  '
+        if fan_eff_tot > 0
+          fan.setFanEfficiency(fan_eff_tot)
         end
-        if vav_coeffs == true
-          fan.setFanPowerCoefficient1(vav_c1)
-      		fan.setFanPowerCoefficient2(vav_c2)
-      		fan.setFanPowerCoefficient3(vav_c3)
-      		fan.setFanPowerCoefficient4(vav_c4)
-      		fan.setFanPowerCoefficient5(vav_c5)
+        if fan_rise > 0
+          fan.setPressureRise(fan_rise_si)
+        end
+        if fan_flow > 0
+          fan.setMaximumFlowRate(fan_flow_si)
+        end
+        if fan_eff_mot > 0
+          fan.setMotorEfficiency(fan_eff_mot) unless fan_type == "FanZoneExhaust"
+        end
+        if fan_mot_heat > 0
+          fan.setMotorInAirstreamFraction(fan_mot_heat) unless fan_type == "FanZoneExhaust"
         end
 
-      end
+        # set on off inputs
+        if fan_type == "FanOnOff"
+          #TODO future curves
+        end
 
-      # set exhaust fan inputs
-      if fan_type == "FanZoneExhaust"
-        fan.setEndUseSubcategory(ef_end_use)
-        #TODO schedules
-        fan.setSystemAvailabilityManagerCouplingMode(ef_mode)
-      end
+        # set vav inputs
+        if fan_type == "FanVariableVolume"
 
-      counter += 1
+          fan.setFanPowerMinimumFlowRateInputMethod(vav_min_flow_method)
+          if vav_min_flow_frac > 0
+            fan.setFanPowerMinimumFlowFraction(vav_min_flow_frac)
+          end
+          if vav_min_flow_rate > 0
+            fan.setFanPowerMinimumAirFlowRate(vav_min_flow_rate_si)
+          end
+          if vav_coeffs == true
+            fan.setFanPowerCoefficient1(vav_c1)
+        		fan.setFanPowerCoefficient2(vav_c2)
+        		fan.setFanPowerCoefficient3(vav_c3)
+        		fan.setFanPowerCoefficient4(vav_c4)
+        		fan.setFanPowerCoefficient5(vav_c5)
+          end
+
+        end
+
+        # set exhaust fan inputs
+        if fan_type == "FanZoneExhaust"
+          fan.setEndUseSubcategory(ef_end_use)
+          #TODO schedules
+          fan.setSystemAvailabilityManagerCouplingMode(ef_mode)
+        end
+
+        counter += 1
+
+      end
 
     end #main
 
@@ -356,5 +371,5 @@ Fan:ZoneExhaust,
 
 end #class
 
-#this allows the measure to be use by the application
+#this allows the measure to be used by the application
 SetFanInputs.new.registerWithApplication
