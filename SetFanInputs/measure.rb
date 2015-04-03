@@ -1,13 +1,12 @@
 # start the measure
 class SetFanInputs < OpenStudio::Ruleset::ModelUserScript
 
-  #define the name that a user will see, this method may be deprecated as
-  #the display name in PAT comes from the name field in measure.xml
+  # define the name that the user will see
   def name
     return "Set Fan Inputs"
   end
 
-  #define the arguments that the user will input open
+  # define the arguments that the user will input open
   def arguments(model)
 
     args = OpenStudio::Ruleset::OSArgumentVector.new
