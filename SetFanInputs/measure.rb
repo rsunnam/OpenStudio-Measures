@@ -1,5 +1,5 @@
 # start the measure
-class SetVAVFanPowerCoefficientsToAppendixG < OpenStudio::Ruleset::ModelUserScript
+class SetFanInputs < OpenStudio::Ruleset::ModelUserScript
 
   #define the name that a user will see, this method may be deprecated as
   #the display name in PAT comes from the name field in measure.xml
@@ -98,11 +98,9 @@ Fan:OnOff,
     ,                        !- Fan Power Ratio Function of Speed Ratio Curve Name
     ,                        !- Fan Efficiency Ratio Function of Speed Ratio Curve Name
     General;                 !- End-Use Subcategory
-
-    # FanOnOff
-    ,                        !- Fan Power Ratio Function of Speed Ratio Curve Name
-    onoff_
 '
+    # FanOnOff
+    # as of 1.7.0 user cannot edit curves
 '
 Fan:VariableVolume,
     ,                        !- Name
@@ -124,7 +122,7 @@ Fan:VariableVolume,
     ,                        !- Air Outlet Node Name
     General;                 !- End-Use Subcategory
 '
-    # FanVariableVolume
+    # FanVariableVolume arguments
 
     vav_choices = OpenStudio::StringVector.new
     vav_choices << "FixedFlowRate"
@@ -134,12 +132,12 @@ Fan:VariableVolume,
     vav_min_flow_method.setDefaultValue("Fraction")
     args << vav_min_flow_method
 
-    vav_min_flow_frac = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("vav_min_flow_frac", false)
+    vav_min_flow_frac = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("vav_min_flow_frac", true)
     vav_min_flow_frac.setDisplayName("VAV: Fan Power Minimum Flow Fraction")
     vav_min_flow_frac.setDefaultValue(-1)
     args << vav_min_flow_frac
 
-    vav_min_flow_rate = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("vav_min_flow_rate", false)
+    vav_min_flow_rate = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("vav_min_flow_rate", true)
     vav_min_flow_rate.setDisplayName("VAV: Fan Power Minimum Air Flow Rate {ft3/min}")
     vav_min_flow_rate.setDefaultValue(-1)
     args << vav_min_flow_rate
@@ -188,7 +186,12 @@ Fan:ZoneExhaust,
     ,                        !- Minimum Zone Temperature Limit Schedule Name
     0;                       !- Balanced Exhaust Fraction Schedule Name
 '
-    # FanZoneExhaust
+    # FanZoneExhaust arguments
+
+    ef_end_use = OpenStudio::Ruleset::OSArgument::makeStringArgument("ef_end_use", true)
+    ef_end_use.setDisplayName("EF: End-Use Subcategory")
+    ef_end_use.setDefaultValue("General")
+    args << ef_end_use
 
     ef_flow_sched = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("ef_flow_sched", sch_handles, sch_display_names, false)
     ef_flow_sched.setDisplayName("EF: Flow Fraction Schedule Name")
@@ -197,39 +200,37 @@ Fan:ZoneExhaust,
     ef_choices = OpenStudio::StringVector.new
     ef_choices << "Coupled"
     ef_choices << "Decoupled"
-    ef_mode = OpenStudio::Ruleset::OSArgument::makeChoiceArgument('ef_mode', ef_choices, false)
+    ef_mode = OpenStudio::Ruleset::OSArgument::makeChoiceArgument('ef_mode', ef_choices, true)
     ef_mode.setDisplayName("EF: System Availability Manager Coupling Mode")
     ef_mode.setDefaultValue("Coupled")
     args << ef_mode
 
-    ef_temp_control = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("ef_temp_control", sch_handles, sch_display_names, false)
-    ef_temp_control.setDisplayName("EF: Minimum Zone Temperature Limit Schedule Name")
-    args << ef_temp_control
+    ef_temp_sched = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("ef_temp_sched", sch_handles, sch_display_names, false)
+    ef_temp_sched.setDisplayName("EF: Minimum Zone Temperature Limit Schedule Name")
+    args << ef_temp_sched
 
-    ef_balance = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("ef_balance", sch_handles, sch_display_names, false)
-    ef_balance.setDisplayName("EF: Balanced Exhaust Fraction Schedule Name")
-    args << ef_balance
+    ef_balance_sched = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("ef_balance_sched", sch_handles, sch_display_names, false)
+    ef_balance_sched.setDisplayName("EF: Balanced Exhaust Fraction Schedule Name")
+    args << ef_balance_sched
 
     return args
 
-  end
+  end #def arguments
 
-  #define what happens when the measure is run
+  # define what happens when the measure is run
   def run(model, runner, user_arguments)
 
     super(model, runner, user_arguments)
 
-    #use the built-in error checking
+    # use the built-in error checking
     if not runner.validateUserArguments(arguments(model), user_arguments)
       return false
     end
 
     # get user arguments, convert to SI units for simulation
-
-    # common
     fan_type = runner.getStringArgumentValue("fan_type", user_arguments)
-    fan_sched = runner.getOptionalWorkspaceObjectChoiceValue("fan_sched", user_arguments, model)
-    fan_sched = fan_sched.get.to_Schedule.get
+    #fan_sched = runner.getOptionalWorkspaceObjectChoiceValue("fan_sched", user_arguments, model)
+    #fan_sched = fan_sched.get.to_Schedule.get
     fan_eff_tot = runner.getDoubleArgumentValue("fan_eff_tot", user_arguments)
     fan_rise = runner.getDoubleArgumentValue("fan_rise", user_arguments)
     fan_rise_si = OpenStudio.convert(fan_rise, "inH_{2}O", "Pa").get
@@ -237,22 +238,9 @@ Fan:ZoneExhaust,
     fan_flow_si = OpenStudio.convert(fan_flow, "ft^3/min", "m^3/s").get
     fan_eff_mot = runner.getDoubleArgumentValue("fan_eff_mot", user_arguments)
     fan_mot_heat = runner.getDoubleArgumentValue("fan_mot_heat", user_arguments)
+    vav_coeffs = runner.getBoolArgumentValue("vav_coeffs", user_arguments)
 
-    # get model objects, report initial conditions
-    if fan_type == "FanConstantVolume"
-
-      fans = model.getFanConstantVolumes
-      runner.registerInitialCondition("Number of CAV fans in model = #{fans.size}")
-
-    elsif fan_type == "FanOnOff"
-
-      fans = model.getFanOnOffs
-      runner.registerInitialCondition("Number of OnOff fans in model = #{fans.size}")
-
-    elsif fan_type == "FanVariableVolume"
-
-      fans = model.getFanVariableVolumes
-      runner.registerInitialCondition("Number of VAV fans in model = #{fans.size}")
+    if fan_type == "FanVariableVolume"
 
       vav_min_flow_method = runner.getStringArgumentValue("vav_min_flow_method", user_arguments)
       vav_min_flow_frac = runner.getDoubleArgumentValue("vav_min_flow_frac", user_arguments)
@@ -267,10 +255,31 @@ Fan:ZoneExhaust,
         vav_c5 = runner.getDoubleArgumentValue("vav_c5", user_arguments)
       end
 
+    end
+
+    if fan_type == "FanZoneExhaust"
+
+      ef_end_use = runner.getStringArgumentValue("ef_end_use", user_arguments)
+#      ef_flow_sched = runner.getOptionalWorkspaceObjectChoiceValue("ef_flow_sched", user_arguments, model)
+      ef_mode = runner.getStringArgumentValue("ef_mode", user_arguments)
+#      ef_temp_sched = runner.getOptionalWorkspaceObjectChoiceValue("ef_temp_sched", user_arguments, model)
+#      ef_balance_sched = runner.getOptionalWorkspaceObjectChoiceValue("ef_balance_sched", user_arguments, model)
+
+    end
+
+    # get model objects, report initial conditions
+    if fan_type == "FanConstantVolume"
+      fans = model.getFanConstantVolumes
+      runner.registerInitialCondition("Number of CAV fans in model = #{fans.size}")
+    elsif fan_type == "FanOnOff"
+      fans = model.getFanOnOffs
+      runner.registerInitialCondition("Number of OnOff fans in model = #{fans.size}")
+    elsif fan_type == "FanVariableVolume"
+      fans = model.getFanVariableVolumes
+      runner.registerInitialCondition("Number of VAV fans in model = #{fans.size}")
     elsif fan_type == "FanZoneExhaust"
-
-      TODO
-
+      fans = model.getFanZoneExhausts
+      runner.registerInitialCondition("Number of exhaust fans in model = #{fans.size}")
     else
       runner.registerError("Fan type not found")
     end
@@ -297,17 +306,15 @@ Fan:ZoneExhaust,
         fan.setMaximumFlowRate(fan_flow_si)
       end
       if fan_eff_mot > 0
-        fan.setMotorEfficiency(fan_eff_mot)
+        fan.setMotorEfficiency(fan_eff_mot) unless fan_type == "FanZoneExhaust"
       end
       if fan_mot_heat > 0
-        fan.setMotorInAirstreamFraction(fan_mot_heat)
+        fan.setMotorInAirstreamFraction(fan_mot_heat) unless fan_type == "FanZoneExhaust"
       end
 
       # set on off inputs
       if fan_type == "FanOnOff"
-
-        TODO
-
+        #TODO future curves
       end
 
       # set vav inputs
@@ -330,24 +337,25 @@ Fan:ZoneExhaust,
 
       end
 
+      # set exhaust fan inputs
       if fan_type == "FanZoneExhaust"
-
-        TODO
-
+        fan.setEndUseSubcategory(ef_end_use)
+        #TODO schedules
+        fan.setSystemAvailabilityManagerCouplingMode(ef_mode)
       end
 
-      counter =+ 1
+      counter += 1
 
-    end
+    end #main
 
     # report final conditions
-    runner.registerFinalCondition("Number of Fans changed = #{counter}")
+    runner.registerFinalCondition("Number of fans changed = #{counter}")
 
     return true
 
-  end #end the run method
+  end #def
 
-end #end the measure
+end #class
 
 #this allows the measure to be use by the application
-SetVAVFanPowerCoefficientsToAppendixG.new.registerWithApplication
+SetFanInputs.new.registerWithApplication
