@@ -1,33 +1,48 @@
 <measure>
   <schema_version>3.0</schema_version>
-  <error>undefined local variable or method `max_cw' for #&lt;SetFCUInputs:0x00000004ba7e40></error>
   <name>set_fcu_inputs</name>
   <uid>c640f600-2673-4493-b15d-16440ae5442a</uid>
-  <version_id>d7bae73a-fdab-4dda-891b-35f445b687e4</version_id>
+  <version_id>fc788c2f-4d60-437a-a8fd-f490cd043f01</version_id>
   <xml_checksum>4435983D</xml_checksum>
   <class_name>SetFCUInputs</class_name>
   <display_name>Set FCU Inputs</display_name>
-  <description>Changes FCU inputs. Can apply to all or select FCUs based on name. Can change all or select inputs. NEGATIVE VALUES ARE IGNORED. </description>
+  <description>Allows the user to change ZoneHVACFourPipeFanCoil inputs. </description>
   <modeler_description>Replace this text with an explanation for the energy modeler specifically.  It should explain how the measure is modeled, including any requirements about how the baseline model must be set up, major assumptions, citations of references to applicable modeling resources, etc.  The energy modeler should be able to read this description and understand what changes the measure is making to the model and why these changes are being made.  Because the Modeler Description is written for an expert audience, using common abbreviations for brevity is good practice.</modeler_description>
   <arguments>
     <argument>
       <name>string</name>
-      <display_name>Set inputs for FCUs containing the string (case sensitive). Enter *.* for all FCUs.</display_name>
+      <display_name>Set inputs for equipment containing the string (case sensitive). Enter *.* for all FCUs.</display_name>
       <type>String</type>
       <required>false</required>
       <model_dependent>false</model_dependent>
       <default_value>*.*</default_value>
     </argument>
     <argument>
-      <name>fcu_flow</name>
-      <display_name>FCU: Maximum Flow Rate {ft3/min}</display_name>
+      <name>fcu_sa_flow</name>
+      <display_name>FCU: Maximum Supply Air Flow Rate {ft3/min}</display_name>
       <type>Double</type>
       <required>false</required>
       <model_dependent>false</model_dependent>
       <default_value>-1</default_value>
     </argument>
     <argument>
-      <name>fcu_oa</name>
+      <name>fcu_sa_rat_low</name>
+      <display_name>FCU: Low Speed Supply Air Flow Ratio</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fcu_sa_rat_med</name>
+      <display_name>FCU: Medium Speed Supply Air Flow Ratio</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fcu_oa_flow</name>
       <display_name>FCU: Maximum Outdoor Air Flow Rate {ft3/min}</display_name>
       <type>Double</type>
       <required>false</required>
@@ -35,7 +50,7 @@
       <default_value>-1</default_value>
     </argument>
     <argument>
-      <name>max_cw</name>
+      <name>fcu_cw_flow_max</name>
       <display_name>FCU: Maximum Cold Water Flow Rate {gal/min}</display_name>
       <type>Double</type>
       <required>false</required>
@@ -43,7 +58,23 @@
       <default_value>-1</default_value>
     </argument>
     <argument>
-      <name>max_hw</name>
+      <name>fcu_cw_flow_min</name>
+      <display_name>FCU: Minimum Cold Water Flow Rate {gal/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fcu_clg_tol</name>
+      <display_name>FCU: Cooling Convergence Tolerance</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>fcu_max_hw_flow</name>
       <display_name>FCU: Maximum Hot Water Flow Rate {gal/min}</display_name>
       <type>Double</type>
       <required>false</required>
@@ -51,16 +82,32 @@
       <default_value>-1</default_value>
     </argument>
     <argument>
-      <name>fan_rise</name>
-      <display_name>Fan: Pressure Rise {inH2O}</display_name>
+      <name>fcu_min_hw_flow</name>
+      <display_name>FCU: Maximum Hot Water Flow Rate {gal/min}</display_name>
       <type>Double</type>
       <required>false</required>
       <model_dependent>false</model_dependent>
       <default_value>-1</default_value>
     </argument>
     <argument>
-      <name>fan_flow</name>
-      <display_name>Fan: Maximum Flow Rate {ft3/min}</display_name>
+      <name>fcu_htg_tol</name>
+      <display_name>FCU: Cooling Convergence Tolerance</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_wtr_flow</name>
+      <display_name>Clg Coil: Design Water Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_air_flow</name>
+      <display_name>Clg Coil: Design Air Flow Rate {ft3/min}</display_name>
       <type>Double</type>
       <required>false</required>
       <model_dependent>false</model_dependent>
@@ -85,6 +132,100 @@
     <argument>
       <name>cc_lat</name>
       <display_name>Clg Coil: Design Outlet Air Temperature {F}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_humrat_in</name>
+      <display_name>Clg Coil: Design Inlet Air Humidity Ratio</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_humrat_out</name>
+      <display_name>Clg Coil: Design Outlet Air Humidity Ratio</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>cc_analysis</name>
+      <display_name>Type of Analysis</display_name>
+      <type>Choice</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>SimpleAnalysis</default_value>
+      <choices>
+        <choice>
+          <value>DetailedAnalysis</value>
+          <display_name>DetailedAnalysis</display_name>
+        </choice>
+        <choice>
+          <value>SimpleAnalysis</value>
+          <display_name>SimpleAnalysis</display_name>
+        </choice>
+      </choices>
+    </argument>
+    <argument>
+      <name>cc_config</name>
+      <display_name>Heat Exchanger Configuration</display_name>
+      <type>Choice</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>CounterFlow</default_value>
+      <choices>
+        <choice>
+          <value>CrossFlow</value>
+          <display_name>CrossFlow</display_name>
+        </choice>
+        <choice>
+          <value>CounterFlow</value>
+          <display_name>CounterFlow</display_name>
+        </choice>
+      </choices>
+    </argument>
+    <argument>
+      <name>hc_ua</name>
+      <display_name>Htg Coil: U-Factor Times Area Value {Btu/h-R}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_wtr_flow_max</name>
+      <display_name>Htg Coil: Maximum Water Flow Rate {ft3/min}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_perf</name>
+      <display_name>Htg Coil: Performance Input Method</display_name>
+      <type>Choice</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>UFactorTimesAreaAndDesignWaterFlowRate</default_value>
+      <choices>
+        <choice>
+          <value>Nominal Capacity</value>
+          <display_name>Nominal Capacity</display_name>
+        </choice>
+        <choice>
+          <value>UFactorTimesAreaAndDesignWaterFlowRate</value>
+          <display_name>UFactorTimesAreaAndDesignWaterFlowRate</display_name>
+        </choice>
+      </choices>
+    </argument>
+    <argument>
+      <name>hc_cap</name>
+      <display_name>Htg Coil: Rated Capacity {Btu/h}</display_name>
       <type>Double</type>
       <required>false</required>
       <model_dependent>false</model_dependent>
@@ -117,6 +258,14 @@
     <argument>
       <name>hc_lat</name>
       <display_name>Htg Coil: Rated Outlet Air Temperature {F}</display_name>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+      <default_value>-1</default_value>
+    </argument>
+    <argument>
+      <name>hc_conv_ratio</name>
+      <display_name>Htg Coil: Rated Ratio for Air and Water Convection</display_name>
       <type>Double</type>
       <required>false</required>
       <model_dependent>false</model_dependent>
@@ -155,7 +304,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>6E7F282D</checksum>
+      <checksum>3ABE16ED</checksum>
     </file>
   </files>
 </measure>
