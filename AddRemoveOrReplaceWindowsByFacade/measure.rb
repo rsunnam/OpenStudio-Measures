@@ -82,8 +82,8 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
       runner.registerError("Height offset is above the limit for sill height: #{offset} inches")
       return false
     end
-# TODO - need?
-    #setup OpenStudio units that we will need
+
+    #setup OpenStudio units that we will need TODO need?
     unit_offset_ip = OpenStudio::createUnit("ft").get
     unit_offset_si = OpenStudio::createUnit("m").get
     unit_area_ip = OpenStudio::createUnit("ft^2").get
@@ -115,7 +115,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
     #flag to track warning for new windows without construction
     empty_const_warning = false
 
-    #calculate initial envelope cost as negative value
+    # calculate initial envelope cost as negative value
     envelope_cost = 0
     constructions = model.getConstructions
     constructions.each do |construction|
@@ -125,25 +125,31 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
           envelope_cost += const_llc.totalCost*-1
         end
       end
-    end #end of constructions.each do
+    end
 
-    # MAIN CODE BLOCK
+    # get model objects
+    surfaces = model.getSurfaces
 
-    # reporting
+    # initialize variables
+
+
+    # report initial conditions
     runner.registerInfo("Function = #{function}")
     runner.registerInfo("Facade = #{facade}")
     runner.registerInfo("WWR = #{wwr}")
     runner.registerInfo("Sill Height = #{offset}")
 
+    # MAIN CODE BLOCK
+
     # loop through surfaces finding exterior walls with proper orientation
-    surfaces = model.getSurfaces
+
     surfaces.each do |s|
+
+      subsurfaces = s.subSurfaces
 
       next if not s.surfaceType == "Wall"
       next if not s.outsideBoundaryCondition == "Outdoors"
-      #skip if adding windows
-      subsurfaces = s.subSurfaces
-      next if subsurfaces.size > 0 && function == "Add"
+      next if subsurfaces.size > 0 and function == "Add"
 
       if s.space.empty?
         runner.registerWarning("#{s.name} doesn't have a parent space and won't be included in the measure reporting or modifications.")
@@ -210,7 +216,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
           ss.remove
         end
 
-      elsif function == "Add" || function == "Replace"
+      elsif function == "Add" or function == "Replace"
 
         runner.registerInfo("Adding Window to Model")
 
@@ -231,6 +237,8 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
         runner.registerInfo("MODEL NOT MODIFIED")
       end #NEW
     end #end of surfaces.each do
+
+    # REPORTING
 
     #report initial condition wwr
     #the initial and final ratios does not currently account for either sub-surface or zone multipliers.
