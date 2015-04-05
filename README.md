@@ -1,4 +1,4 @@
-###OpenStudio Measures I've written (and you're welcome to use)
+###OpenStudio Measures
 
 To copy a measure:
 
@@ -6,4 +6,6 @@ To copy a measure:
 2. Create a new measure in OS or PAT
 3. Open the newly created measure.rb file and replace the code
 
-(or fork this repo and clone to local)
+(or fork and clone this repo)
+
+Feel free to submit a bug or comment using the `Issues` link.
