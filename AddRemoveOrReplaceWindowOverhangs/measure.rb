@@ -35,6 +35,7 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     # depth
     depth = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth", false)
     depth.setDisplayName("Depth (in)")
+    depth.setDescription("Negative values are ignored")
     depth.setDefaultValue(-1)
     args << depth
 
@@ -46,8 +47,9 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
 
     #make an argument for projection factor
     projection_factor = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor",true)
-    projection_factor.setDisplayName("Projection Factor (overhang depth / window height) TODO")
-    projection_factor.setDefaultValue(0.5)
+    projection_factor.setDisplayName("Projection Factor (overhang depth / window height)")
+    projection_factor.setDescription("Negative values are ignored")
+    projection_factor.setDefaultValue(-1)
     args << projection_factor
 '
     # make an argument for deleting all existing space shading in the model
@@ -95,9 +97,9 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     end
 
     # assign the user inputs to variables, convert to SI units for simulation
-#    projection_factor = runner.getDoubleArgumentValue("projection_factor",user_arguments)
+    projection_factor = runner.getDoubleArgumentValue("projection_factor",user_arguments)
     facade = runner.getStringArgumentValue("facade",user_arguments)
-    remove_ext_space_shading = runner.getBoolArgumentValue("remove_ext_space_shading",user_arguments)
+    #remove_ext_space_shading = runner.getBoolArgumentValue("remove_ext_space_shading",user_arguments)
     construction = runner.getOptionalWorkspaceObjectChoiceValue("construction",user_arguments,model)
     depth = runner.getDoubleArgumentValue("depth",user_arguments)
     depth_si= OpenStudio.convert(depth,"in","m").get
@@ -252,8 +254,15 @@ runner.registerInfo("ADDING OR REPLACING")
         # don't actually add it, but from the measure's perspective this worked as requested
         overhang_added = true
       else
-#NEW - add the overhang TODO add offset error
-        new_overhang = s.addOverhang(depth_si, offset_si) #addOverhangByProjectionFactor(projection_factor, 0)
+
+        #NEW - add the overhang TODO add offset error
+        if depth > 0
+          new_overhang = s.addOverhang(depth_si, offset_si)
+        end
+        if projection_factor > 0
+          new_overhang = s.addOverhangByProjectionFactor(projection_factor, 0)
+        end
+
         if new_overhang.empty?
           ok = runner.registerWarning("Unable to add overhang to " + s.briefDescription +
                    " with projection factor " + projection_factor.to_s + " and offset " + offset.to_s + ".")
