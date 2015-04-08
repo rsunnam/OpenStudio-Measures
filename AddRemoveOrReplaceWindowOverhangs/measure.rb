@@ -12,22 +12,22 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     args = OpenStudio::Ruleset::OSArgumentVector.new
 
     # function
-    function_chs = OpenStudio::StringVector.new
-    function_chs << "Add"
-    function_chs << "Remove"
-    function_chs << "Replace"
-    function = OpenStudio::Ruleset::OSArgument::makeChoiceArgument('function', function_chs, true)
-    function.setDisplayName("Select Measure Function")
+    function_choices = OpenStudio::StringVector.new
+    function_choices << "Add"
+    function_choices << "Remove"
+    function_choices << "Replace"
+    function = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("function", function_choices, true)
+    function.setDisplayName("Measure Function")
     function.setDefaultValue("Add")
     args << function
 
     # make choice argument for facade
-    choices = OpenStudio::StringVector.new
-    choices << "North"
-    choices << "East"
-    choices << "South"
-    choices << "West"
-    facade = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("facade", choices)
+    facade_choices = OpenStudio::StringVector.new
+    facade_choices << "North"
+    facade_choices << "East"
+    facade_choices << "South"
+    facade_choices << "West"
+    facade = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("facade", facade_choices, true)
     facade.setDisplayName("Cardinal Direction")
     facade.setDefaultValue("South")
     args << facade
@@ -35,21 +35,22 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     # depth
     depth = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth", false)
     depth.setDisplayName("Depth (in)")
-    depth.setDescription("Negative values are ignored")
-    depth.setDefaultValue(-1)
+    #depth.setDescription("Use depth OR projection factor.")
+    #depth.setDefaultValue()
     args << depth
 
     # offset
-    offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("offset", false)
+    offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("offset", true)
     offset.setDisplayName("Height and Width Offset (in)")
+    #offset.setDescription("")
     offset.setDefaultValue(0)
     args << offset
 
     #make an argument for projection factor
-    projection_factor = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor",true)
+    projection_factor = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor", false)
     projection_factor.setDisplayName("Projection Factor (overhang depth / window height)")
-    projection_factor.setDescription("Negative values are ignored")
-    projection_factor.setDefaultValue(-1)
+    #projection_factor.setDescription("Negative values are ignored")
+    #projection_factor.setDefaultValue(-1)
     args << projection_factor
 '
     # make an argument for deleting all existing space shading in the model
@@ -87,25 +88,40 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
 
   end #end the arguments method
 
-  #define what happens when the measure is run
+  # define what happens when the measure is run
   def run(model, runner, user_arguments)
+
     super(model, runner, user_arguments)
 
-    #use the built-in error checking
+    # use the built-in error checking
     if not runner.validateUserArguments(arguments(model), user_arguments)
       return false
     end
 
     # assign the user inputs to variables, convert to SI units for simulation
-    projection_factor = runner.getDoubleArgumentValue("projection_factor",user_arguments)
-    facade = runner.getStringArgumentValue("facade",user_arguments)
-    #remove_ext_space_shading = runner.getBoolArgumentValue("remove_ext_space_shading",user_arguments)
-    construction = runner.getOptionalWorkspaceObjectChoiceValue("construction",user_arguments,model)
-    depth = runner.getDoubleArgumentValue("depth",user_arguments)
-    depth_si= OpenStudio.convert(depth,"in","m").get
     function = runner.getStringArgumentValue("function", user_arguments)
+    facade = runner.getStringArgumentValue("facade",user_arguments)
+
+    depth = runner.getOptionalDoubleArgumentValue("depth", user_arguments)
+    if depth.is_initialized
+      depth = depth.get
+      depth_si = OpenStudio.convert(depth,"in","m").get
+    else
+      depth = nil
+    end
+
     offset = runner.getDoubleArgumentValue("offset", user_arguments)
     offset_si = OpenStudio.convert(offset, "in", "m").get
+
+    projection_factor = runner.getOptionalDoubleArgumentValue("projection_factor", user_arguments)
+    if projection_factor.is_initialized
+      projection_factor = projection_factor.get
+    else
+      projection_factor = nil
+    end
+
+    #remove_ext_space_shading = runner.getBoolArgumentValue("remove_ext_space_shading",user_arguments)
+    construction = runner.getOptionalWorkspaceObjectChoiceValue("construction",user_arguments,model)
 '
     #check reasonableness of fraction
     projection_factor_too_small = false
@@ -191,7 +207,7 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     # MAIN CODE
 
     if function == "Remove"
-runner.registerInfo("REMOVING SHADING GROUPS")
+      runner.registerInfo("REMOVING OVERHANGS")
     #delete all space shading groups if requested
     #if remove_ext_space_shading and number_of_exist_space_shading_surf > 0
       num_removed = 0
@@ -209,7 +225,7 @@ runner.registerInfo("REMOVING SHADING GROUPS")
     overhang_added = false
 
     if function == "Add" or function == "Replace"
-runner.registerInfo("ADDING OR REPLACING")
+      runner.registerInfo("ADDING OR REPLACING OVERHANGS")
     #loop through surfaces finding exterior walls with proper orientation
     sub_surfaces = model.getSubSurfaces
     sub_surfaces.each do |s|
@@ -248,22 +264,27 @@ runner.registerInfo("ADDING OR REPLACING")
           end
         end
       end
+
       projection_factor_too_small = false
       if projection_factor_too_small
+
         # new overhang would be too small and would cause errors in OpenStudio
-        # don't actually add it, but from the measure's perspective this worked as requested
+        # don"t actually add it, but from the measure"s perspective this worked as requested
         overhang_added = true
+
       else
 
-        #NEW - add the overhang TODO add offset error
-        if depth > 0
+        # add the overhang
+        if !depth.nil? && !projection_factor.nil? #empty? doesn't work on float or nil types
+          runner.registerWarning("Conflicting overhang parameters chosen: depth and projection factor.")
+          new_overhang = nil
+        elsif !depth.nil?
           new_overhang = s.addOverhang(depth_si, offset_si)
-        end
-        if projection_factor > 0
+        elsif !projection_factor.nil?
           new_overhang = s.addOverhangByProjectionFactor(projection_factor, 0)
         end
-
-        if new_overhang.empty?
+#TODO error for no inputs
+        if new_overhang.nil?
           ok = runner.registerWarning("Unable to add overhang to " + s.briefDescription +
                    " with projection factor " + projection_factor.to_s + " and offset " + offset.to_s + ".")
           return false if not ok
@@ -279,6 +300,7 @@ runner.registerInfo("ADDING OR REPLACING")
           end
           overhang_added = true
         end
+
       end
 
     end #end sub_surfaces.each do |s|
