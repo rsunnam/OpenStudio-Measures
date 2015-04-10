@@ -11,7 +11,6 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
 
     args = OpenStudio::Ruleset::OSArgumentVector.new
 
-    # function
     function_choices = OpenStudio::StringVector.new
     function_choices << "Add"
     function_choices << "Remove"
@@ -21,7 +20,6 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     function.setDefaultValue("Add")
     args << function
 
-    # make choice argument for facade
     facade_choices = OpenStudio::StringVector.new
     facade_choices << "All"
     facade_choices << "North"
@@ -33,21 +31,18 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     facade.setDefaultValue("All")
     args << facade
 
-    # depth
     depth = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth", false)
     depth.setDisplayName("Depth (in)")
     #depth.setDescription("Use depth OR projection factor.")
     #depth.setDefaultValue()
     args << depth
 
-    # offset
     offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("offset", true)
     offset.setDisplayName("Height and Width Offset (in)")
     #offset.setDescription("")
     offset.setDefaultValue(0)
     args << offset
 
-    #make an argument for projection factor
     projection_factor = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor", false)
     projection_factor.setDisplayName("Projection Factor (overhang depth / window height)")
     #projection_factor.setDescription("Negative values are ignored")
