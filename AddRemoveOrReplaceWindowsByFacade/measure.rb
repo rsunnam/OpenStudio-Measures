@@ -133,8 +133,6 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
     # get model objects
     surfaces = model.getSurfaces
 
-    # initialize variables
-
     # report initial conditions
 
     # MAIN CODE BLOCK
