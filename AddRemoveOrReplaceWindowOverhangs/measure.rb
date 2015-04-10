@@ -1,5 +1,5 @@
 # start the measure
-class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
+class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
 
   #define the name that a user will see, this method may be deprecated as the display name in PAT comes from the name field in measure.xml
   def name
@@ -17,19 +17,20 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     function_choices << "Remove"
     function_choices << "Replace"
     function = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("function", function_choices, true)
-    function.setDisplayName("Measure Function")
+    function.setDisplayName("Function")
     function.setDefaultValue("Add")
     args << function
 
     # make choice argument for facade
     facade_choices = OpenStudio::StringVector.new
+    facade_choices << "All"
     facade_choices << "North"
     facade_choices << "East"
     facade_choices << "South"
     facade_choices << "West"
     facade = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("facade", facade_choices, true)
     facade.setDisplayName("Cardinal Direction")
-    facade.setDefaultValue("South")
+    facade.setDefaultValue("All")
     args << facade
 
     # depth
@@ -207,7 +208,6 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
     # MAIN CODE
 
     if function == "Remove"
-      runner.registerInfo("REMOVING OVERHANGS")
     #delete all space shading groups if requested
     #if remove_ext_space_shading and number_of_exist_space_shading_surf > 0
       num_removed = 0
@@ -217,15 +217,13 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
           num_removed += 1
         end
       end
-      runner.registerInfo("Removed all #{num_removed} space shading surface groups from the model.")
-
     end #remove
+    runner.registerInfo("Removed all #{num_removed} space shading surface groups from the model.")
 
     #flag for not applicable
     overhang_added = false
 
     if function == "Add" or function == "Replace"
-      runner.registerInfo("ADDING OR REPLACING OVERHANGS")
     #loop through surfaces finding exterior walls with proper orientation
     sub_surfaces = model.getSubSurfaces
     sub_surfaces.each do |s|
@@ -241,6 +239,7 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
       azimuth = OpenStudio::Quantity.new(s.azimuth,OpenStudio::createSIAngle)
       azimuth = OpenStudio::convert(azimuth,OpenStudio::createIPAngle).get.value
 
+    if facade != "All"
       if facade == "North"
         next if not (azimuth >= 315.0 or azimuth < 45.0)
       elsif facade == "East"
@@ -253,6 +252,7 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
         runner.registerError("Unexpected value of facade: " + facade + ".")
         return false
       end
+    end
 
       #delete existing overhang for this window if it exists from previously run measure
       shading_groups.each do |shading_group|
@@ -329,4 +329,4 @@ class AddOverhangsByDepth < OpenStudio::Ruleset::ModelUserScript
 end #end the measure
 
 #this allows the measure to be use by the application
-AddOverhangsByDepth.new.registerWithApplication
+AddRemoveOrReplaceWindowOverhangs.new.registerWithApplication
