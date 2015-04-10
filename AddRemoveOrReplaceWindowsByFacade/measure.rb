@@ -1,9 +1,9 @@
 # start the measure
-class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
+class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
 
   # define the name that a user will see
   def name
-    return "Add Remove Or Replace Windows By Facade"
+    return "Add Remove Or Replace Windows"
   end
 
   # define the arguments that the user will enter
@@ -18,19 +18,20 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
     function_choices << "Remove"
     function_choices << "Replace"
     function = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("function", function_choices, true)
-    function.setDisplayName("Choose Measure Function")
+    function.setDisplayName("Function")
     function.setDefaultValue("Add")
     args << function
 
     # argument for facade
     facade_choices = OpenStudio::StringVector.new
+    facade_choices << "All"
     facade_choices << "North"
     facade_choices << "East"
     facade_choices << "South"
     facade_choices << "West"
     facade = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("facade", facade_choices, true)
-    facade.setDisplayName("Cardinal Direction.")
-    facade.setDefaultValue("South")
+    facade.setDisplayName("Facade")
+    facade.setDefaultValue("All")
     args << facade
 
     # argument for wwr
@@ -60,7 +61,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
       return false
     end
 
-    # assign user inputs to variables
+    # assign user inputs to variables, convert to SI units for simulation
     function = runner.getStringArgumentValue("function", user_arguments)
     facade = runner.getStringArgumentValue("facade", user_arguments)
     wwr = runner.getDoubleArgumentValue("wwr", user_arguments)
@@ -90,12 +91,14 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
     unit_area_si = OpenStudio::createUnit("m^2").get
     unit_cost_per_area_ip = OpenStudio::createUnit("1/ft^2").get #$/ft^2 does not work
     unit_cost_per_area_si = OpenStudio::createUnit("1/m^2").get
-
     #define starting units
-    offset_ip = OpenStudio::Quantity.new(offset/12, unit_offset_ip)
-
+#    offset_ip = OpenStudio::Quantity.new(offset/12, unit_offset_ip)
     #unit conversion
-    offset_si = OpenStudio::convert(offset_ip, unit_offset_si).get
+#    offset_si = OpenStudio::convert(offset_ip, unit_offset_si).get
+
+    # initialize variables
+    add_replace_count = 0
+    remove_count =0
 
     #hold data for initial condition
     starting_gross_ext_wall_area = 0.0 # includes windows and doors
@@ -132,12 +135,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
 
     # initialize variables
 
-
     # report initial conditions
-    runner.registerInfo("Function = #{function}")
-    runner.registerInfo("Facade = #{facade}")
-    runner.registerInfo("WWR = #{wwr}")
-    runner.registerInfo("Sill Height = #{offset}")
 
     # MAIN CODE BLOCK
 
@@ -155,6 +153,8 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
         runner.registerWarning("#{s.name} doesn't have a parent space and won't be included in the measure reporting or modifications.")
         next
       end
+
+    if facade != "All"
 
       #get the absoluteAzimuth for the surface so we can categorize it
       absoluteAzimuth = OpenStudio::convert(s.azimuth,"rad","deg").get + s.space.get.directionofRelativeNorth + model.getBuilding.northAxis
@@ -174,6 +174,9 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
         runner.registerError("Unexpected value of facade: " + facade + ".")
         return false
       end
+
+    end
+
       exterior_walls = true
 
       #get surface area adjusting for zone multiplier
@@ -207,21 +210,19 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
       starting_ext_window_area += ext_window_area
 
       # NEW CODE
-      runner.registerInfo("Number of subsurfaces within #{s.name}: #{subsurfaces.size}")
+      #runner.registerInfo("Number of subsurfaces within #{s.name}: #{subsurfaces.size}")
 
       if function == "Remove"
 
         subsurfaces.each do |ss|
-          runner.registerInfo("Removing Window: #{ss.name}")
           ss.remove
+          remove_count =+ 1
         end
 
       elsif function == "Add" or function == "Replace"
 
-        runner.registerInfo("Adding Window to Model")
-
         # add window
-        new_window = s.setWindowToWallRatio(wwr, offset_si.value, true)
+        new_window = s.setWindowToWallRatio(wwr, offset_si, true)
         if new_window.empty?
           runner.registerWarning("The requested window to wall ratio for surface '#{s.name}' was too large. Fenestration was not altered for this surface.")
         else
@@ -232,9 +233,9 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
             empty_const_warning = true
           end
         end
-
+        add_replace_count =+ 1
       else
-        runner.registerInfo("MODEL NOT MODIFIED")
+        runner.registerWarning("MODEL NOT MODIFIED")
       end #NEW
     end #end of surfaces.each do
 
@@ -243,7 +244,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
     #report initial condition wwr
     #the initial and final ratios does not currently account for either sub-surface or zone multipliers.
     starting_wwr = sprintf("%.02f",(starting_ext_window_area/starting_gross_ext_wall_area))
-    runner.registerInitialCondition("The model's initial window to wall ratio for #{facade} facing exterior walls was #{starting_wwr}.") #TODO
+    runner.registerInitialCondition("Window to wall ratio for #{facade.upcase} exterior walls = #{starting_wwr}.")
 
     if not exterior_walls
       runner.registerAsNotApplicable("The model has no exterior #{facade.downcase} walls and was not altered")
@@ -269,6 +270,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
         absoluteAzimuth = absoluteAzimuth - 360.0
       end
 
+    if facade != "All"
       if facade == "North"
         next if not (absoluteAzimuth >= 315.0 or absoluteAzimuth < 45.0)
       elsif facade == "East"
@@ -281,6 +283,7 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
         runner.registerError("Unexpected value of facade: " + facade + ".")
         return false
       end
+    end
 
       #get surface area adjusting for zone multiplier
       space = s.space
@@ -335,8 +338,14 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
 
     #report final condition
     final_wwr = sprintf("%.02f",(final_ext_window_area/final_gross_ext_wall_area))
-    runner.registerFinalCondition("The model's final window to wall ratio for #{facade} facing exterior walls is #{final_wwr}. Window area increased by #{neat_numbers(increase_window_area_ip.value,0)} (ft^2). The material and construction costs increased by $#{neat_numbers(envelope_cost,0)}.")
-
+    runner.registerFinalCondition("Window to wall ratio for #{facade.upcase} exterior walls = #{final_wwr}. Window area increased by #{neat_numbers(increase_window_area_ip.value,0)} (ft^2). The material and construction costs increased by $#{neat_numbers(envelope_cost,0)}.")
+'
+    if function == "Add" or function == "Replace"
+      runner.registerFinalCondition("Number of windows added or replaced = #{add_replace_count}")
+    elsif function == "Remove"
+      runner.registerFinalCondition("Number of windows removed = #{remove_count}")
+    end
+'
     return true
 
   end #end the run method
@@ -344,4 +353,4 @@ class AddRemoveOrReplaceWindowsByFacade < OpenStudio::Ruleset::ModelUserScript
 end #end the measure
 
 #this allows the measure to be use by the application
-AddRemoveOrReplaceWindowsByFacade.new.registerWithApplication
+AddRemoveOrReplaceWindows.new.registerWithApplication
