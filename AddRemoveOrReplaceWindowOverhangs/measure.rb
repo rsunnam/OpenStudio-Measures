@@ -38,7 +38,7 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     #depth.setDescription("Depth offset required if adding overhang by depth.")
     args << depth
 
-    # depth_offset
+    # depth offset
     depth_offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth_offset", false)
     depth_offset.setDisplayName("Depth Offset (in)")
     depth_offset.setDescription("height and width offset from window edge")
@@ -51,6 +51,7 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     projection_factor.setDescription("overhang depth / window height")
     args << projection_factor
 
+    # projection factor offset
     projection_factor_offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor_offset", false)
     projection_factor_offset.setDisplayName("Projection Factor Offset (fraction)")
     projection_factor_offset.setDescription("height and width offset from window edge") #TODO
