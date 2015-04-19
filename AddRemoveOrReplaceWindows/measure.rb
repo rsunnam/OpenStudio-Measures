@@ -75,9 +75,9 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
       runner.registerError("Height offset must be > 0.")
       return false
     elsif offset > 360
-      runner.registerWarning("Height offset seems unusually high: #{offset} inches")
+      runner.registerWarning("Height offset seems unusually high.")
     elsif offset > 9999
-      runner.registerError("Height offset is above the limit for sill height: #{offset} inches")
+      runner.registerError("Height offset is above the limit for sill height.")
       return false
     end
 
@@ -136,7 +136,7 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
       next if subsurfaces.size > 0 and function == "Add"
 
       if s.space.empty?
-        runner.registerWarning("Surface doesn't have a parent space and won't be included in the measure: #{s.name}")
+        runner.registerWarning("surface doesn't have a parent space and won't be included in the measure: #{s.name}")
         next
       end
 
@@ -157,7 +157,7 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
         elsif facade == "West"
           next if not (absolute_azimuth >= 225.0 and absolute_azimuth < 315.0)
         else
-          runner.registerError("Unexpected value of facade: " + facade + ".")
+          runner.registerError("unexpected value of facade:" + facade)
           return false
         end
 
@@ -228,7 +228,7 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
     # report initial condition
     # wwr does not currently account for either subsurface or zone multipliers
     starting_wwr = sprintf("%.02f",(starting_ext_window_area/starting_gross_ext_wall_area))
-    runner.registerInitialCondition("Window to wall ratio for #{facade} exterior walls = #{starting_wwr}")
+    runner.registerInitialCondition("window to wall ratio for #{facade} exterior walls = #{starting_wwr}")
 
     if not ext_walls
       runner.registerAsNotApplicable("The model doesn't have exterior walls and was not altered.")
@@ -265,7 +265,7 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
         elsif facade == "West"
           next if not (absolute_azimuth >= 225.0 and absolute_azimuth < 315.0)
         else
-          runner.registerError("Unexpected value of facade: " + facade + ".")
+          runner.registerError("unexpected value of facade:" + facade)
           return false
         end
 
@@ -327,19 +327,22 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
     end
 
     final_wwr = sprintf("%.02f",(final_ext_window_area/final_gross_ext_wall_area))
-    runner.registerFinalCondition("Window to wall ratio for #{facade} exterior walls = #{final_wwr}")
+    runner.registerFinalCondition("window to wall ratio for #{facade} exterior walls = #{final_wwr}")
 
     if function == "Add" or function == "Replace"
-      runner.registerWarning("Number of windows added or replaced = #{add_replace_count}")
+      runner.registerInfo("number of windows added or replaced = #{add_replace_count}")
     elsif function == "Remove"
-      runner.registerWarning("Number of windows removed = #{remove_count}")
+      runner.registerInfo("number of windows removed = #{remove_count}")
     end
 
-    runner.registerWarning("Window area increased by #{neat_numbers(increase_window_area_ip.value,0)} ft2.")
+    runner.registerInfo("window area change = #{neat_numbers(increase_window_area_ip.value,0)} ft2.")
     #runner.registerWarning("The material and construction costs increased by $#{neat_numbers(envelope_cost,0)}.")
 
     # warn user to surface match prior to running measure
     runner.registerWarning("Surface match before applying this measure to avoid adding windows to interior partition walls.")
+
+    # warn user to remove window overhangs before removing windows
+    runner.registerWarning("Remove window overhangs before removing windows.")
 
     return true
 
@@ -347,5 +350,5 @@ class AddRemoveOrReplaceWindows < OpenStudio::Ruleset::ModelUserScript
 
 end #the measure
 
-# this allows the measure to be use by the application
+# this allows the measure to be used by the application
 AddRemoveOrReplaceWindows.new.registerWithApplication

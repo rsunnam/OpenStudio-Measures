@@ -1,13 +1,13 @@
 <measure>
   <schema_version>3.0</schema_version>
-  <name>add_remove_or_replace_windows</name>
-  <uid>a6ab424b-5f89-4ef5-a780-059ed71aa237</uid>
-  <version_id>02b0cea7-cd0f-4b83-981b-15b6e3363e3f</version_id>
+  <name>add_remove_or_replace_window_overhangs</name>
+  <uid>0b2330df-e692-4b04-a386-46221b71aab7</uid>
+  <version_id>75d51f71-9355-4162-ba01-dffe713c80cb</version_id>
   <xml_checksum>6FAFA9DE</xml_checksum>
-  <class_name>AddRemoveOrReplaceWindows</class_name>
-  <display_name>Add Remove Or Replace Windows</display_name>
-  <description>Run Surface Matching measure before applying this one to avoid adding windows to interior partition walls. Adds ribbon windows to surfaces on the selected facade if none exist. Removes all windows on the selected facade. Replaces all windows on the selected facade with ribbon windows.</description>
-  <modeler_description>Loops through surfaces on the selected facade and either adds, removes, or replaces a subsurface.</modeler_description>
+  <class_name>AddRemoveOrReplaceWindowOverhangs</class_name>
+  <display_name>Add Remove Or Replace Window Overhangs</display_name>
+  <description>Adds, removes, or replaces window overhangs by depth or projection factor on the selected facade.</description>
+  <modeler_description>Loops through subsurfaces and either adds, removes, or replaces an overhang.</modeler_description>
   <arguments>
     <argument>
       <name>function</name>
@@ -60,20 +60,45 @@
       </choices>
     </argument>
     <argument>
-      <name>wwr</name>
-      <display_name>Window to Wall Ratio (fraction)</display_name>
+      <name>depth</name>
+      <display_name>Depth (in)</display_name>
+      <description>horizontal length of overhang</description>
       <type>Double</type>
-      <required>true</required>
+      <required>false</required>
       <model_dependent>false</model_dependent>
-      <default_value>0.4</default_value>
     </argument>
     <argument>
-      <name>offset</name>
-      <display_name>Height Offset from Floor (in)</display_name>
+      <name>depth_offset</name>
+      <display_name>Depth Offset (in)</display_name>
+      <description>height and width offset from window edge</description>
       <type>Double</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>30</default_value>
+      <default_value>0</default_value>
+    </argument>
+    <argument>
+      <name>projection_factor</name>
+      <display_name>Projection Factor (fraction)</display_name>
+      <description>overhang depth / window height</description>
+      <type>Double</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
+    </argument>
+    <argument>
+      <name>projection_factor_offset</name>
+      <display_name>Projection Factor Offset (fraction)</display_name>
+      <description>height and width offset from window edge</description>
+      <type>Double</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>0</default_value>
+    </argument>
+    <argument>
+      <name>construction</name>
+      <display_name>Construction (optional)</display_name>
+      <type>Choice</type>
+      <required>false</required>
+      <model_dependent>false</model_dependent>
     </argument>
   </arguments>
   <provenances/>
@@ -94,22 +119,10 @@
   </attributes>
   <files>
     <file>
-      <filename>SetWindowToWallRatioByFacade_Test.rb</filename>
+      <filename>AddOverhangsbyLength_Test.rb</filename>
       <filetype>rb</filetype>
       <usage_type>test</usage_type>
-      <checksum>757B1EF6</checksum>
-    </file>
-    <file>
-      <filename>measure.rb</filename>
-      <filetype>rb</filetype>
-      <usage_type>test</usage_type>
-      <checksum>815C8371</checksum>
-    </file>
-    <file>
-      <filename>measure.xml</filename>
-      <filetype>xml</filetype>
-      <usage_type>test</usage_type>
-      <checksum>CBB28524</checksum>
+      <checksum>B33EA892</checksum>
     </file>
     <file>
       <version>
@@ -120,7 +133,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>40ABCB50</checksum>
+      <checksum>FCB5AB59</checksum>
     </file>
   </files>
 </measure>

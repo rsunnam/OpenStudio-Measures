@@ -35,11 +35,11 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     # depth
     depth = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth", false)
     depth.setDisplayName("Depth (in)")
-    #depth.setDescription("Depth offset required if adding overhang by depth.")
+    depth.setDescription("horizontal length of overhang")
     args << depth
 
     # depth offset
-    depth_offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth_offset", false)
+    depth_offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("depth_offset", true)
     depth_offset.setDisplayName("Depth Offset (in)")
     depth_offset.setDescription("height and width offset from window edge")
     depth_offset.setDefaultValue(0)
@@ -52,9 +52,9 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     args << projection_factor
 
     # projection factor offset
-    projection_factor_offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor_offset", false)
+    projection_factor_offset = OpenStudio::Ruleset::OSArgument::makeDoubleArgument("projection_factor_offset", true)
     projection_factor_offset.setDisplayName("Projection Factor Offset (fraction)")
-    projection_factor_offset.setDescription("height and width offset from window edge") #TODO
+    projection_factor_offset.setDescription("height and width offset from window edge")
     projection_factor_offset.setDefaultValue(0)
     args << projection_factor_offset
 
@@ -80,7 +80,7 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
 
     #make an argument for construction
     construction = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("construction", construction_handles, construction_display_names, false)
-    construction.setDisplayName("Optionally Choose a Construction for the Overhangs.")
+    construction.setDisplayName("Construction (optional)")
     args << construction
 
     # return arguments vector
@@ -98,7 +98,7 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
       return false
     end
 
-    # assign user inputs to variables, check, and convert to SI units for simulation
+    # assign user inputs to variables, check values, and convert to SI units for simulation
     function = runner.getStringArgumentValue("function", user_arguments)
     facade = runner.getStringArgumentValue("facade", user_arguments)
 
@@ -107,13 +107,13 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     if depth.is_initialized
       depth = depth.get
       if depth < 0
-        runner.registerError("Depth must be > 0")
+        runner.registerError("depth must be >= 0")
         return false
       elsif depth < 1
-        runner.registerWarning("Depth seems unusually small, check input.")
+        runner.registerWarning("depth seems unusually small")
         depth_too_small = true
       end
-      depth_si = OpenStudio.convert(depth,"in","m").get
+      depth_si = OpenStudio.convert(depth, "in", "m").get
     else
       depth = nil
     end
@@ -121,12 +121,9 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     depth_offset = runner.getDoubleArgumentValue("depth_offset", user_arguments)
     depth_offset_too_small = false
     if depth_offset < 0
-      runner.registerError("Depth offset must be > 0")
+      runner.registerError("depth offset must be >= 0")
       return false
-'    elsif depth_offset < 1
-      runner.registerWarning("Depth offset seems unusually small, check input.") #TODO and not function == "Remove"
-      depth_offset_too_small = true
-'    end
+    end
     depth_offset_si = OpenStudio.convert(depth_offset, "in", "m").get
 
     projection_factor = runner.getOptionalDoubleArgumentValue("projection_factor", user_arguments)
@@ -134,13 +131,13 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     if projection_factor.is_initialized
       projection_factor = projection_factor.get
       if projection_factor < 0
-        runner.registerError("Projection factor must be > 0")
+        runner.registerError("projection factor must be > 0")
         return false
       elsif projection_factor < 0.1
-        runner.registerWarning("Projection factor seems unusually small, check input.")
+        runner.registerWarning("projection factor seems unusually small")
         projection_factor_too_small = true
       elsif projection_factor > 5
-        runner.registerWarning("Projection factor seems unusually large, check input.")
+        runner.registerWarning("projection factor seems unusually large")
       end
     else
       projection_factor = nil
@@ -148,19 +145,21 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
 
     projection_factor_offset = runner.getDoubleArgumentValue("projection_factor_offset", user_arguments)
     if projection_factor_offset < 0
-      runner.registerError("Depth offset must be > 0")
+      runner.registerError("projection factor offset must be >= 0")
       return false
-'    elsif projection_factor_offset < 1
-      runner.registerWarning("Depth offset seems unusually small, check input.")
-      depth_offset_too_small = true
-'    end
+    end
 
-    construction = runner.getOptionalWorkspaceObjectChoiceValue("construction",user_arguments,model)
+    if not depth.nil? and not projection_factor.nil? #empty? doesn't work on float or nil types
+      runner.registerError("Overhangs can only be added by entering a depth or projection factor.")
+      return false
+    end
+
+    construction = runner.getOptionalWorkspaceObjectChoiceValue("construction", user_arguments,model)
     construction_chosen = true
     if construction.empty?
-      handle = runner.getOptionalStringArgumentValue("construction",user_arguments)
+      handle = runner.getOptionalStringArgumentValue("construction", user_arguments)
       if handle.empty?
-        runner.registerInfo("No construction was chosen.")
+#        runner.registerInfo("No construction was chosen.")
         construction_chosen = false
       else
         runner.registerError("The selected construction with handle '#{handle}' was not found in the model. It may have been removed by another measure.")
@@ -184,7 +183,7 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
       end
       #regex to add commas
       number.to_s.reverse.gsub(%r{([0-9]{3}(?=([0-9])))}, "\\1,").reverse
-    end #end def neat_numbers
+    end
 
     # helper to make it easier to do unit conversions on the fly. The definition be called through this measure.
     def unit_helper(number,from_unit_string,to_unit_string)
@@ -205,18 +204,20 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
         end
       end
       return counter
-    end #end of def get_total_costs_for_objects(objects)
+    end
 
     # counter for year 0 capital costs
     yr0_capital_totalCosts = 0
 
     # get initial construction costs and multiply by -1
-    yr0_capital_totalCosts +=  get_total_costs_for_objects(model.getConstructions)*-1
+    yr0_capital_totalCosts +=  get_total_costs_for_objects(model.getConstructions) * -1
 
+    # flag for not applicable
+    overhang_added = false
 
     # initialize variables
-    remove_count = 0
     add_replace_count = 0
+    remove_count = 0
 
     # get model objects
     shading_groups = model.getShadingSurfaceGroups
@@ -229,67 +230,59 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
         number_of_exist_space_shading_surf = number_of_exist_space_shading_surf + shading_group.shadingSurfaces.size
       end
     end
-    runner.registerInitialCondition("overhangs = #{number_of_exist_space_shading_surf}")
+    runner.registerInitialCondition("number of overhangs = #{number_of_exist_space_shading_surf}")
 
-    # MAIN
+    # add remove or replace window overhangs
+    # loop through subsurfaces finding exterior walls with proper orientation
+    subsurfaces.each do |s|
 
-    if function == "Remove"
+      next if not s.outsideBoundaryCondition == "Outdoors"
+      next if s.subSurfaceType == "Skylight"
+      next if s.subSurfaceType == "Door"
+      next if s.subSurfaceType == "GlassDoor"
+      next if s.subSurfaceType == "OverheadDoor"
+      next if s.subSurfaceType == "TubularDaylightDome"
+      next if s.subSurfaceType == "TubularDaylightDiffuser"
 
+      # get subsurface azimuth to determine facade
+      azimuth = OpenStudio::Quantity.new(s.azimuth, OpenStudio::createSIAngle)
+      azimuth = OpenStudio.convert(azimuth, OpenStudio::createIPAngle).get.value
+
+      if not facade == "All"
+
+        if facade == "North"
+          next if not (azimuth >= 315.0 or azimuth < 45.0)
+        elsif facade == "East"
+          next if not (azimuth >= 45.0 and azimuth < 135.0)
+        elsif facade == "South"
+          next if not (azimuth >= 135.0 and azimuth < 225.0)
+        elsif facade == "West"
+          next if not (azimuth >= 225.0 and azimuth < 315.0)
+        else
+          runner.registerError("unexpected value of facade:" + facade)
+          return false
+        end
+
+      end
+
+      # delete existing overhang for this window if it exists from previously run measure
       shading_groups.each do |shading_group|
-        if shading_group.shadingSurfaceType == "Space"
-          shading_group.remove
-          remove_count += 1
+        shading_surfaces = shading_group.shadingSurfaces
+        shading_surfaces.each do |ss|
+          if ss.name.to_s == "#{s.name.to_s} - Overhang"
+            ss.remove
+            runner.registerWarning("removed window overhang: #{ss.name}")
+          end
         end
       end
 
-#      runner.registerInfo("overhangs removed = #{remove_count}")
+      if function == "Remove"
 
-      # flag for not applicable
-      overhang_added = false
+        remove_count += 1
+        overhang_added = false
+        next
 
-    else #if function == "Add" or function == "Replace"
-      #loop through surfaces finding exterior walls with proper orientation
-      subsurfaces.each do |s|
-
-        next if not s.outsideBoundaryCondition == "Outdoors"
-        next if s.subSurfaceType == "Skylight"
-        next if s.subSurfaceType == "Door"
-        next if s.subSurfaceType == "GlassDoor"
-        next if s.subSurfaceType == "OverheadDoor"
-        next if s.subSurfaceType == "TubularDaylightDome"
-        next if s.subSurfaceType == "TubularDaylightDiffuser"
-
-        # get subsurface azimuth to determine facade
-        azimuth = OpenStudio::Quantity.new(s.azimuth, OpenStudio::createSIAngle)
-        azimuth = OpenStudio.convert(azimuth, OpenStudio::createIPAngle).get.value
-
-        if not facade == "All"
-
-          if facade == "North"
-            next if not (azimuth >= 315.0 or azimuth < 45.0)
-          elsif facade == "East"
-            next if not (azimuth >= 45.0 and azimuth < 135.0)
-          elsif facade == "South"
-            next if not (azimuth >= 135.0 and azimuth < 225.0)
-          elsif facade == "West"
-            next if not (azimuth >= 225.0 and azimuth < 315.0)
-          else
-            runner.registerError("Unexpected value of facade: " + facade + ".")
-            return false
-          end
-
-        end
-
-        # delete existing overhang if one already exists TODO
-        shading_groups.each do |shading_group|
-          shading_s = shading_group.shadingSurfaces
-          shading_s.each do |ss|
-            if ss.name.to_s == "#{s.name.to_s} - Overhang"
-              ss.remove
-              runner.registerWarning("Removed pre-existing window shade named '#{ss.name}'.")
-            end
-          end
-        end
+      else #function == "Add" or function == "Replace"
 
         projection_factor_too_small = false
         if projection_factor_too_small
@@ -298,43 +291,46 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
           overhang_added = true
         else
           # add the overhang
-          if not depth.nil? and not projection_factor.nil? #empty? doesn't work on float or nil types
-            runner.registerError("Overhangs can only be added by entering a depth and offset or by entering a projection factor.")
-            new_overhang = nil
-          elsif not depth.nil? and depth_offset == nil
+          if not depth.nil? and depth_offset == nil
             runner.registerError("Depth offset required if adding overhangs by depth.")
+            return false
+          elsif not projection_factor.nil? and projection_factor_offset == nil
+            runner.registerError("Projection factor offset required if adding overhangs by projection factor.")
+            return false
           elsif not depth.nil?
             new_overhang = s.addOverhang(depth_si, depth_offset_si)
           elsif not projection_factor.nil?
             new_overhang = s.addOverhangByProjectionFactor(projection_factor, projection_factor_offset)
           end
-  #TODO error for no inputs
-          if new_overhang.nil?
-            ok = runner.registerWarning("Unable to add overhang to " + s.briefDescription +
-                     " with projection factor " + projection_factor.to_s + " and offset " + offset.to_s + ".")
+
+          if new_overhang.empty?
+            ok = runner.registerWarning("unable to add overhang to subsurface:" + s.briefDescription) #+
+#                     " with projection factor " + projection_factor.to_s + " and offset " + offset.to_s + ".")
             return false if not ok
           else
             new_overhang.get.setName("#{s.name} - Overhang")
-'            runner.registerInfo("Added overhang " + new_overhang.get.briefDescription + " to " +
-                s.briefDescription + " with depth " + depth.to_s +
-                " and offset " + "0" + ".")
-'
+#            runner.registerInfo("Added overhang " + new_overhang.get.briefDescription + " to " +
+#                s.briefDescription + " with depth " + depth.to_s +
+#                " and offset " + "0" + ".")
+            runner.registerWarning("added window overhang: #{new_overhang.get.name.to_s}")
             if construction_chosen
-              if not construction.  to_Construction.empty?
+              if not construction.to_Construction.empty?
                 new_overhang.get.setConstruction(construction)
               end
             end
             overhang_added = true
           end
+
           add_replace_count += 1
+
         end
 
-      end #end subsurfaces.each do |s|
+      end
 
-    end #add or replace
+    end #add remove or replace overhangs
 
     if not overhang_added and not function == "Remove"
-      runner.registerAsNotApplicable("The model has exterior #{facade.downcase} walls, but no windows were found to add overhangs to.")
+      runner.registerAsNotApplicable("No windows were found to add overhangs to on #{facade} exterior walls.")
       return true
     end
 
@@ -347,20 +343,21 @@ class AddRemoveOrReplaceWindowOverhangs < OpenStudio::Ruleset::ModelUserScript
     final_shading_groups.each do |shading_group|
       number_of_final_space_shading_surf = number_of_final_space_shading_surf + shading_group.shadingSurfaces.size
     end
-    runner.registerFinalCondition("overhangs = #{number_of_final_space_shading_surf}")
+    runner.registerFinalCondition("number of overhangs = #{number_of_final_space_shading_surf}")
 
     if function == "Add" or function == "Replace"
       runner.registerInfo("overhangs added or replaced = #{add_replace_count}")
     elsif function == "Remove"
       runner.registerInfo("overhangs removed = #{remove_count}")
     end
-#    runner.registerWarning("Initial capital costs associated with the improvements are $#{neat_numbers(yr0_capital_totalCosts,0)}.")
+
+#    runner.registerInfo("Initial capital costs associated with the improvements are $#{neat_numbers(yr0_capital_totalCosts,0)}.")
 
     return true
 
-  end #end the run method
+  end #run
 
-end #end the measure
+end #measure
 
-#this allows the measure to be use by the application
+# this allows the measure to be used by the application
 AddRemoveOrReplaceWindowOverhangs.new.registerWithApplication
