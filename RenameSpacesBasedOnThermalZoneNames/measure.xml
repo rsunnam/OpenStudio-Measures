@@ -2,7 +2,7 @@
   <schema_version>3.0</schema_version>
   <name>rename_spaces_based_on_thermal_zone_names</name>
   <uid>45156538-d9af-4e84-9901-886705cfd278</uid>
-  <version_id>ae0fff59-b8e6-40cb-a738-a9b5cac9077e</version_id>
+  <version_id>864532fd-2a01-4759-bea2-2a7fc4ca02e0</version_id>
   <xml_checksum>45097B60</xml_checksum>
   <class_name>RenameSpacesBasedOnThermalZoneNames</class_name>
   <display_name>Rename Spaces Based On Thermal Zone Names</display_name>
@@ -12,6 +12,7 @@
     <argument>
       <name>rename</name>
       <display_name>Rename spaces with common thermal zone?</display_name>
+      <description>Spaces will be renamed sequentially.</description>
       <type>Boolean</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
@@ -60,7 +61,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>684A2F85</checksum>
+      <checksum>C8183046</checksum>
     </file>
   </files>
 </measure>

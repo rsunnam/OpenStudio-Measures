@@ -1,8 +1,7 @@
 # start the measure
 class RenameSpacesBasedOnThermalZoneNames < OpenStudio::Ruleset::ModelUserScript
 
-  # define the name that a user will see, this method may be deprecated as
-  #   the display name in PAT comes from the name field in measure.xml
+  # define the name that a user will see
   def name
     return "Rename Spaces Based On Thermal Zone Names"
   end
@@ -15,6 +14,7 @@ class RenameSpacesBasedOnThermalZoneNames < OpenStudio::Ruleset::ModelUserScript
     # argument for renaming spaces with common parent zone
     rename = OpenStudio::Ruleset::OSArgument::makeBoolArgument("rename", true)
     rename.setDisplayName("Rename spaces with common thermal zone?")
+    rename.setDescription("Spaces will be renamed sequentially.")
     rename.setDefaultValue(false)
     args << rename
 
@@ -35,33 +35,38 @@ class RenameSpacesBasedOnThermalZoneNames < OpenStudio::Ruleset::ModelUserScript
     # assign the user inputs to variables
     rename = runner.getBoolArgumentValue("rename", user_arguments)
 
-    # report initial condition of model
-    runner.registerInitialCondition("Number of Spaces in Model: #{model.getSpaces.size}")
+    # initialize variables
+    rename_count = 0
 
-    # main code block
-
+    # get model objects
     zones = model.getThermalZones
-    cnt_spaces = 0
 
+    # report initial condition
+    runner.registerInitialCondition("number of spaces in model = #{model.getSpaces.size}")
+
+    # rename spaces based on zone name
     zones.each do |z|
 
       spaces = z.spaces
 
-      if spaces.size == 1 || rename == true
+      if spaces.size == 1 or rename == true
         spaces.each do |s|
+          initial_name = s.name.to_s
           s.setName(z.name.to_s)
-          cnt_spaces += 1
+          final_name = s.name.to_s
+          runner.registerInfo("#{initial_name} renamed to #{final_name}")
+          rename_count += 1
         end
-      elsif spaces.size > 1 && rename == false
-        runner.registerInfo("Thermal zone has multiple spaces: #{z.name}")
+      elsif spaces.size > 1 and rename == false
+        runner.registerWarning("thermal zone has multiple spaces: #{z.name}")
       else
-        runner.registerInfo("Thermal zone does not have any spaces: #{z.name}")
+        runner.registerWarning("thermal zone does not have any spaces: #{z.name}")
       end
 
     end
 
-    # report final condition of model
-    runner.registerFinalCondition("Number of Spaces Renamed: #{cnt_spaces}")
+    # report final condition
+    runner.registerFinalCondition("number of spaces renamed = #{rename_count}")
 
     return true
 
