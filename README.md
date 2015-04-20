@@ -8,6 +8,6 @@
 
 **Copying A Finished Measure (one with xml file and test folder)**
 
-1. (or fork and clone this repo)
+1. Fork and clone this repo
 
 Feel free to submit a bug or comment using the `Issues` link.
