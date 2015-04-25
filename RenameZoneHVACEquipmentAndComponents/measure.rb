@@ -16,7 +16,7 @@ class RenameZoneHVACEquipmentAndComponents < OpenStudio::Ruleset::ModelUserScrip
     eqpt_choices = OpenStudio::StringVector.new
     eqpt_choices << "ZoneHVACFourPipeFanCoil"
     eqpt_choices << "ZoneHVACPackagedTerminalAirConditioner"
-    #eqpt_choices << "ZoneHVACPackagedTerminalHeatPump"
+    eqpt_choices << "ZoneHVACPackagedTerminalHeatPump"
     #eqpt_choices << "ZoneHVACUnitHeater"
     eqpt_choices << "ZoneHVACWaterToAirHeatPump"
     eqpt_type = OpenStudio::Ruleset::OSArgument::makeChoiceArgument("eqpt_type", eqpt_choices, true)
@@ -151,6 +151,46 @@ class RenameZoneHVACEquipmentAndComponents < OpenStudio::Ruleset::ModelUserScrip
             htg_coil.setName("#{ptac.name} Htg Coil")
             count_htg_coils += 1
             clg_coil.setName("#{ptac.name} Clg Coil")
+            count_clg_coils += 1
+          end
+
+        # Packaged Terminal Heat Pumps
+        elsif eqpt_type == "ZoneHVACPackagedTerminalHeatPump" and eqpt.to_ZoneHVACPackagedTerminalHeatPump.is_initialized
+
+          # get equipment and components
+          pthp = eqpt.to_ZoneHVACPackagedTerminalHeatPump.get
+
+          if pthp.supplyAirFan.to_FanOnOff.is_initialized
+            fan = pthp.supplyAirFan.to_FanOnOff.get
+          elsif pthp.supplyAirFan.to_FanConstantVolume.is_initialized
+            fan = pthp.supplyAirFan.to_FanConstantVolume.get
+          end
+
+          if pthp.heatingCoil.to_CoilHeatingDXSingleSpeed.is_initialized
+            htg_coil = pthp.heatingCoil.to_CoilHeatingDXSingleSpeed.get
+          elsif pthp.heatingCoil.to_CoilHeatingDXVariableSpeed.is_initialized
+            htg_coil = pthp.heatingCoil.to_CoilHeatingDXVariableSpeed.get
+          end
+
+          if pthp.coolingCoil.to_CoilCoolingDXSingleSpeed.is_initialized
+            clg_coil = pthp.coolingCoil.to_CoilCoolingDXSingleSpeed.get
+          elsif pthp.coolingCoil.to_CoilCoolingDXVariableSpeed.is_initialized
+            clg_coil = pthp.coolingCoil.to_CoilCoolingDXVariableSpeed.get
+          end
+
+          # rename equipment
+          if rename_hvac_eqpt == true
+            pthp.setName("#{z.name} PTHP")
+            count_eqpt += 1
+          end
+
+          # rename components
+          if rename_hvac_comp == true
+            fan.setName("#{pthp.name} Fan")
+            count_fans += 1
+            htg_coil.setName("#{pthp.name} Htg Coil")
+            count_htg_coils += 1
+            clg_coil.setName("#{pthp.name} Clg Coil")
             count_clg_coils += 1
           end
 
